@@ -1,11 +1,12 @@
-
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, Check, MapPin, Calendar, Weight, Phone, MessageCircle } from 'lucide-react';
-import { getProductById, formatPrice } from '../data/products';
+import { formatPrice } from '../data/products';
+import { useProducts } from '@/contexts/ProductContext';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
+  const { getProductById } = useProducts();
   const product = id ? getProductById(id) : undefined;
 
   if (!product) {
@@ -40,7 +41,6 @@ const ProductDetail = () => {
       </div>
 
       <div className="container mx-auto px-4 py-8">
-        {/* Back Button */}
         <Link
           to="/products"
           className="inline-flex items-center text-green-600 hover:text-green-700 mb-6"
@@ -50,7 +50,6 @@ const ProductDetail = () => {
         </Link>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Product Image */}
           <div>
             <img
               src={product.image}
@@ -59,7 +58,6 @@ const ProductDetail = () => {
             />
           </div>
 
-          {/* Product Info */}
           <div>
             <div className="mb-4">
               <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium capitalize">
@@ -77,7 +75,6 @@ const ProductDetail = () => {
               {product.description}
             </p>
 
-            {/* Specifications */}
             <div className="bg-white rounded-lg p-6 shadow-md mb-6">
               <h3 className="text-lg font-semibold mb-4">Spesifikasi</h3>
               <div className="grid grid-cols-2 gap-4">
@@ -105,7 +102,6 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Features */}
             <div className="bg-white rounded-lg p-6 shadow-md mb-6">
               <h3 className="text-lg font-semibold mb-4">Keunggulan</h3>
               <ul className="space-y-3">
@@ -118,7 +114,6 @@ const ProductDetail = () => {
               </ul>
             </div>
 
-            {/* Stock Status */}
             <div className="bg-white rounded-lg p-6 shadow-md mb-6">
               <div className="flex items-center justify-between">
                 <span className="text-gray-600">Status Ketersediaan:</span>
@@ -134,7 +129,6 @@ const ProductDetail = () => {
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="space-y-4">
               <a
                 href="tel:+6281234567890"
@@ -154,7 +148,6 @@ const ProductDetail = () => {
           </div>
         </div>
 
-        {/* Additional Info */}
         <div className="mt-12 bg-white rounded-lg p-8 shadow-md">
           <h2 className="text-2xl font-bold mb-6">Informasi Tambahan</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

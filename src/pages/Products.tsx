@@ -1,10 +1,11 @@
-
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Filter, Search } from 'lucide-react';
-import { products, formatPrice, getProductsByType } from '../data/products';
+import { formatPrice } from '../data/products';
+import { useProducts } from '@/contexts/ProductContext';
 
 const Products = () => {
+  const { products, getProductsByType } = useProducts();
   const [selectedType, setSelectedType] = useState<string>('semua');
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('name');
@@ -60,7 +61,6 @@ const Products = () => {
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
             <div className="relative">
               <Search className="absolute left-3 top-3 text-gray-400" size={20} />
               <input
@@ -72,7 +72,6 @@ const Products = () => {
               />
             </div>
 
-            {/* Type Filter */}
             <select
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
               value={selectedType}
@@ -85,7 +84,6 @@ const Products = () => {
               ))}
             </select>
 
-            {/* Sort */}
             <select
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
               value={sortBy}
@@ -100,7 +98,6 @@ const Products = () => {
           </div>
         </div>
 
-        {/* Results Count */}
         <div className="mb-6">
           <p className="text-gray-600">
             Menampilkan {filteredProducts.length} dari {products.length} produk

@@ -2,9 +2,11 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { ArrowRight, Shield, Truck, CheckCircle, Users, Award, Heart } from 'lucide-react';
-import { products, formatPrice } from '../data/products';
+import { formatPrice } from '../data/products';
+import { useProducts } from '@/contexts/ProductContext';
 
 const Home = () => {
+  const { products } = useProducts();
   const featuredProducts = products.slice(0, 3);
 
   return (

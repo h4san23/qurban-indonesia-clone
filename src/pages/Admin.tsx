@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,10 +7,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Trash2, Plus, Edit } from 'lucide-react';
+import { Trash2, Plus } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { Product, products as initialProducts, formatPrice } from '@/data/products';
+import { Product, formatPrice } from '@/data/products';
 import { useToast } from "@/hooks/use-toast";
+import { useProducts } from '@/contexts/ProductContext';
 
 interface ProductFormData {
   name: string;
@@ -27,7 +27,7 @@ interface ProductFormData {
 }
 
 const Admin = () => {
-  const [productList, setProductList] = useState<Product[]>(initialProducts);
+  const { products, addProduct, deleteProduct } = useProducts();
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const { toast } = useToast();
   
@@ -48,7 +48,7 @@ const Admin = () => {
 
   const onSubmit = (data: ProductFormData) => {
     const newProduct: Product = {
-      id: (productList.length + 1).toString(),
+      id: (Date.now()).toString(),
       name: data.name,
       type: data.type,
       price: data.price,
@@ -61,7 +61,7 @@ const Admin = () => {
       location: data.location
     };
 
-    setProductList([...productList, newProduct]);
+    addProduct(newProduct);
     form.reset();
     setIsAddDialogOpen(false);
     
@@ -72,8 +72,8 @@ const Admin = () => {
   };
 
   const handleDelete = (id: string) => {
-    const productToDelete = productList.find(p => p.id === id);
-    setProductList(productList.filter(product => product.id !== id));
+    const productToDelete = products.find(p => p.id === id);
+    deleteProduct(id);
     
     toast({
       title: "Produk berhasil dihapus",
@@ -305,7 +305,7 @@ const Admin = () => {
         <CardHeader>
           <CardTitle>Daftar Produk</CardTitle>
           <CardDescription>
-            Total: {productList.length} produk
+            Total: {products.length} produk
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -324,7 +324,7 @@ const Admin = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {productList.map((product) => (
+                {products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell>
                       <img 
