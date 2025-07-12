@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Filter, Search } from 'lucide-react';
@@ -5,39 +6,53 @@ import { formatPrice } from '../data/products';
 import { useProducts } from '@/contexts/ProductContext';
 
 const Products = () => {
-  const { products, getProductsByType } = useProducts();
-  const [selectedType, setSelectedType] = useState<string>('semua');
+  const { products } = useProducts();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [sortBy, setSortBy] = useState<string>('name');
+  const [minPrice, setMinPrice] = useState<string>('');
+  const [maxPrice, setMaxPrice] = useState<string>('');
+  const [minWeight, setMinWeight] = useState<string>('');
+  const [maxWeight, setMaxWeight] = useState<string>('');
 
-  const filteredProducts = getProductsByType(selectedType === 'semua' ? undefined : selectedType)
-    .filter(product => 
-      product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase())
-    )
+  const filteredProducts = products
+    .filter(product => {
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const priceFilter = (!minPrice || product.price >= parseInt(minPrice)) &&
+                         (!maxPrice || product.price <= parseInt(maxPrice));
+      
+      const weightNum = parseInt(product.weight.replace(/[^\d]/g, ''));
+      const weightFilter = (!minWeight || weightNum >= parseInt(minWeight)) &&
+                          (!maxWeight || weightNum <= parseInt(maxWeight));
+      
+      return matchesSearch && priceFilter && weightFilter;
+    })
     .sort((a, b) => {
       switch (sortBy) {
         case 'price-low':
           return a.price - b.price;
         case 'price-high':
           return b.price - a.price;
+        case 'weight-low':
+          const aWeight = parseInt(a.weight.replace(/[^\d]/g, ''));
+          const bWeight = parseInt(b.weight.replace(/[^\d]/g, ''));
+          return aWeight - bWeight;
+        case 'weight-high':
+          const aWeightHigh = parseInt(a.weight.replace(/[^\d]/g, ''));
+          const bWeightHigh = parseInt(b.weight.replace(/[^\d]/g, ''));
+          return bWeightHigh - aWeightHigh;
         case 'name':
         default:
           return a.name.localeCompare(b.name);
       }
     });
 
-  const typeOptions = [
-    { value: 'semua', label: 'Semua Produk' },
-    { value: 'kambing', label: 'Kambing' },
-    { value: 'sapi', label: 'Sapi' },
-    { value: 'domba', label: 'Domba' },
-  ];
-
   const sortOptions = [
     { value: 'name', label: 'Nama A-Z' },
     { value: 'price-low', label: 'Harga Terendah' },
     { value: 'price-high', label: 'Harga Tertinggi' },
+    { value: 'weight-low', label: 'Berat Teringan' },
+    { value: 'weight-high', label: 'Berat Terberat' },
   ];
 
   return (
@@ -47,7 +62,7 @@ const Products = () => {
         <div className="container mx-auto px-4">
           <h1 className="text-4xl font-bold mb-4">Produk Qurban</h1>
           <p className="text-green-200 text-lg">
-            Pilihan lengkap hewan qurban berkualitas tinggi untuk kebutuhan ibadah Anda
+            Pilihan hewan qurban berkualitas dari Al-Munawwir Farm
           </p>
         </div>
       </div>
@@ -60,8 +75,8 @@ const Products = () => {
             <h3 className="text-lg font-semibold">Filter & Pencarian</h3>
           </div>
           
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div className="relative">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-4">
+            <div className="relative col-span-full md:col-span-1">
               <Search className="absolute left-3 top-3 text-gray-400" size={20} />
               <input
                 type="text"
@@ -74,18 +89,6 @@ const Products = () => {
 
             <select
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
-              value={selectedType}
-              onChange={(e) => setSelectedType(e.target.value)}
-            >
-              {typeOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-
-            <select
-              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
             >
@@ -95,6 +98,37 @@ const Products = () => {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+            <input
+              type="number"
+              placeholder="Harga minimum"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+              value={minPrice}
+              onChange={(e) => setMinPrice(e.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Harga maksimum"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+              value={maxPrice}
+              onChange={(e) => setMaxPrice(e.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Berat minimum (kg)"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+              value={minWeight}
+              onChange={(e) => setMinWeight(e.target.value)}
+            />
+            <input
+              type="number"
+              placeholder="Berat maksimum (kg)"
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-green-500 focus:border-green-500"
+              value={maxWeight}
+              onChange={(e) => setMaxWeight(e.target.value)}
+            />
           </div>
         </div>
 
@@ -115,21 +149,19 @@ const Products = () => {
               />
               <div className="p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium capitalize">
-                    {product.type}
+                  <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium">
+                    No Tag: {product.id}
                   </span>
                   <span className={`px-2 py-1 rounded-full text-xs ${
-                    product.stock > 10 
+                    product.stock > 0 
                       ? 'bg-green-100 text-green-800' 
-                      : product.stock > 5 
-                        ? 'bg-yellow-100 text-yellow-800'
-                        : 'bg-red-100 text-red-800'
+                      : 'bg-red-100 text-red-800'
                   }`}>
-                    Stok: {product.stock}
+                    {product.stock > 0 ? 'Tersedia' : 'Terjual'}
                   </span>
                 </div>
                 
-                <h3 className="text-xl font-semibold mb-2">{product.name}</h3>
+                <h3 className="text-xl font-semibold mb-2 capitalize">{product.type}</h3>
                 <p className="text-gray-600 mb-4 line-clamp-2">{product.description}</p>
                 
                 <div className="space-y-2 mb-4">
@@ -138,29 +170,17 @@ const Products = () => {
                     <span className="font-medium">{product.weight}</span>
                   </div>
                   <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Umur:</span>
-                    <span className="font-medium">{product.age}</span>
-                  </div>
-                  <div className="flex justify-between text-sm">
-                    <span className="text-gray-500">Lokasi:</span>
-                    <span className="font-medium">{product.location}</span>
+                    <span className="text-gray-500">Harga:</span>
+                    <span className="font-bold text-green-600">{formatPrice(product.price)}</span>
                   </div>
                 </div>
 
-                <div className="border-t pt-4">
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="text-2xl font-bold text-green-600">
-                      {formatPrice(product.price)}
-                    </span>
-                  </div>
-                  
-                  <Link
-                    to={`/product/${product.id}`}
-                    className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-center block"
-                  >
-                    Lihat Detail
-                  </Link>
-                </div>
+                <Link
+                  to={`/product/${product.id}`}
+                  className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors text-center block"
+                >
+                  Lihat Detail
+                </Link>
               </div>
             </div>
           ))}
