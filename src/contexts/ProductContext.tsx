@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { Product, products as initialProducts } from '@/data/products';
 
 interface ProductContextType {
@@ -24,8 +24,30 @@ interface ProductProviderProps {
   children: ReactNode;
 }
 
+const STORAGE_KEY = 'qurban_products';
+
 export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) => {
-  const [products, setProducts] = useState<Product[]>(initialProducts);
+  const [products, setProducts] = useState<Product[]>(() => {
+    // Load data dari localStorage saat inisialisasi
+    try {
+      const savedProducts = localStorage.getItem(STORAGE_KEY);
+      if (savedProducts) {
+        return JSON.parse(savedProducts);
+      }
+    } catch (error) {
+      console.error('Error loading products from localStorage:', error);
+    }
+    return initialProducts;
+  });
+
+  // Simpan ke localStorage setiap kali products berubah
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(products));
+    } catch (error) {
+      console.error('Error saving products to localStorage:', error);
+    }
+  }, [products]);
 
   const addProduct = (product: Product) => {
     setProducts(prev => [...prev, product]);
