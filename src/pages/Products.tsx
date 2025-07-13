@@ -1,17 +1,21 @@
-
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, SlidersHorizontal } from 'lucide-react';
+import { Search, ArrowUpDown } from 'lucide-react';
 import { useProducts } from '@/contexts/ProductContext';
 import { formatPrice } from '@/data/products';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const Products = () => {
   const { products } = useProducts();
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedType, setSelectedType] = useState('semua');
-  const [priceRange, setPriceRange] = useState({ min: '', max: '' });
-  const [weightRange, setWeightRange] = useState({ min: '', max: '' });
-  const [showFilters, setShowFilters] = useState(false);
+  const [sortBy, setSortBy] = useState('default');
 
   // Get unique product types
   const productTypes = useMemo(() => {
@@ -19,34 +23,34 @@ const Products = () => {
     return ['semua', ...types];
   }, [products]);
 
-  // Get price and weight ranges
-  const ranges = useMemo(() => {
-    const prices = products.map(p => p.price);
-    const weights = products.map(p => p.weight);
-    return {
-      minPrice: Math.min(...prices),
-      maxPrice: Math.max(...prices),
-      minWeight: Math.min(...weights),
-      maxWeight: Math.max(...weights)
-    };
-  }, [products]);
-
-  const filteredProducts = useMemo(() => {
-    return products.filter(product => {
+  const filteredAndSortedProducts = useMemo(() => {
+    let filtered = products.filter(product => {
       const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = selectedType === 'semua' || product.type === selectedType;
-      
-      const minPrice = priceRange.min ? Number(priceRange.min) : 0;
-      const maxPrice = priceRange.max ? Number(priceRange.max) : Infinity;
-      const matchesPrice = product.price >= minPrice && product.price <= maxPrice;
-      
-      const minWeight = weightRange.min ? Number(weightRange.min) : 0;
-      const maxWeight = weightRange.max ? Number(weightRange.max) : Infinity;
-      const matchesWeight = product.weight >= minWeight && product.weight <= maxWeight;
-
-      return matchesSearch && matchesType && matchesPrice && matchesWeight;
+      return matchesSearch && matchesType;
     });
-  }, [products, searchTerm, selectedType, priceRange, weightRange]);
+
+    // Apply sorting
+    switch (sortBy) {
+      case 'price-low':
+        filtered.sort((a, b) => a.price - b.price);
+        break;
+      case 'price-high':
+        filtered.sort((a, b) => b.price - a.price);
+        break;
+      case 'weight-low':
+        filtered.sort((a, b) => a.weight - b.weight);
+        break;
+      case 'weight-high':
+        filtered.sort((a, b) => b.weight - a.weight);
+        break;
+      default:
+        // Keep original order
+        break;
+    }
+
+    return filtered;
+  }, [products, searchTerm, selectedType, sortBy]);
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -81,78 +85,35 @@ const Products = () => {
             ))}
           </select>
 
-          <button
-            onClick={() => setShowFilters(!showFilters)}
-            className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
-          >
-            <SlidersHorizontal className="mr-2" size={16} />
-            Filter Harga & Berat
-          </button>
+          <Select value={sortBy} onValueChange={setSortBy}>
+            <SelectTrigger className="w-[200px]">
+              <ArrowUpDown className="mr-2 h-4 w-4" />
+              <SelectValue placeholder="Urutkan" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="default">Default</SelectItem>
+              <SelectItem value="price-low">Harga Terendah</SelectItem>
+              <SelectItem value="price-high">Harga Tertinggi</SelectItem>
+              <SelectItem value="weight-low">Bobot Terendah</SelectItem>
+              <SelectItem value="weight-high">Bobot Tertinggi</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
-
-        {/* Advanced Filters - Only Price and Weight */}
-        {showFilters && (
-          <div className="grid md:grid-cols-2 gap-4 pt-4 border-t">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rentang Harga (Rp)
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder={`Min (${formatPrice(ranges.minPrice)})`}
-                  value={priceRange.min}
-                  onChange={(e) => setPriceRange(prev => ({ ...prev, min: e.target.value }))}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                />
-                <input
-                  type="number"
-                  placeholder={`Max (${formatPrice(ranges.maxPrice)})`}
-                  value={priceRange.max}
-                  onChange={(e) => setPriceRange(prev => ({ ...prev, max: e.target.value }))}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                />
-              </div>
-            </div>
-            
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Rentang Berat (kg)
-              </label>
-              <div className="flex gap-2">
-                <input
-                  type="number"
-                  placeholder={`Min (${ranges.minWeight}kg)`}
-                  value={weightRange.min}
-                  onChange={(e) => setWeightRange(prev => ({ ...prev, min: e.target.value }))}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                />
-                <input
-                  type="number"
-                  placeholder={`Max (${ranges.maxWeight}kg)`}
-                  value={weightRange.max}
-                  onChange={(e) => setWeightRange(prev => ({ ...prev, max: e.target.value }))}
-                  className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
-                />
-              </div>
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Results Summary */}
       <div className="mb-6">
         <p className="text-gray-600">
-          Menampilkan {filteredProducts.length} dari {products.length} produk
+          Menampilkan {filteredAndSortedProducts.length} dari {products.length} produk
         </p>
       </div>
 
       {/* Product Grid */}
       <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredProducts.map((product) => (
+        {filteredAndSortedProducts.map((product) => (
           <div key={product.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
             <img
-              src={product.images[0] || "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=400&h=250&fit=crop"}
+              src={product.images?.[0] || "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=400&h=250&fit=crop"}
               alt={product.name}
               className="w-full h-48 object-cover rounded-t-lg"
             />
@@ -161,7 +122,7 @@ const Products = () => {
                 <span className="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-medium">
                   {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
                 </span>
-                {product.images.length > 1 && (
+                {product.images && product.images.length > 1 && (
                   <span className="text-gray-500 text-xs">{product.images.length} foto</span>
                 )}
               </div>
@@ -196,7 +157,7 @@ const Products = () => {
         ))}
       </div>
 
-      {filteredProducts.length === 0 && (
+      {filteredAndSortedProducts.length === 0 && (
         <div className="text-center py-12">
           <p className="text-gray-500 text-lg">Tidak ada produk yang sesuai dengan kriteria pencarian.</p>
         </div>
