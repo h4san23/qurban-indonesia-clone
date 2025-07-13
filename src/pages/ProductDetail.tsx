@@ -1,8 +1,15 @@
+
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, Heart, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Heart, ZoomIn, ZoomOut, RotateCcw, Maximize2 } from 'lucide-react';
 import { useProducts } from '@/contexts/ProductContext';
 import { formatPrice } from '@/data/products';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -10,6 +17,9 @@ const ProductDetail = () => {
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   const [zoomLevel, setZoomLevel] = useState(1);
   const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
+  const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
+  const [fullscreenZoom, setFullscreenZoom] = useState(1);
+  const [fullscreenPosition, setFullscreenPosition] = useState({ x: 0, y: 0 });
   
   if (!id) {
     return <div>Product ID not found</div>;
@@ -54,6 +64,35 @@ const ProductDetail = () => {
       const y = ((e.clientY - rect.top) / rect.height - 0.5) * -100;
       setImagePosition({ x, y });
     }
+  };
+
+  // Fullscreen handlers
+  const handleFullscreenZoomIn = () => {
+    setFullscreenZoom(prev => Math.min(prev + 0.5, 5));
+  };
+
+  const handleFullscreenZoomOut = () => {
+    setFullscreenZoom(prev => Math.max(prev - 0.5, 0.5));
+  };
+
+  const handleFullscreenResetZoom = () => {
+    setFullscreenZoom(1);
+    setFullscreenPosition({ x: 0, y: 0 });
+  };
+
+  const handleFullscreenImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (fullscreenZoom > 1) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * -100;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * -100;
+      setFullscreenPosition({ x, y });
+    }
+  };
+
+  const openFullscreen = () => {
+    setIsFullscreenOpen(true);
+    setFullscreenZoom(1);
+    setFullscreenPosition({ x: 0, y: 0 });
   };
 
   return (
@@ -107,6 +146,13 @@ const ProductDetail = () => {
                 className="p-2 hover:bg-gray-100 rounded transition-colors"
               >
                 <RotateCcw size={16} className="text-gray-700" />
+              </button>
+              <button
+                onClick={openFullscreen}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                title="Tampilkan penuh layar"
+              >
+                <Maximize2 size={16} className="text-gray-700" />
               </button>
             </div>
 
@@ -206,6 +252,85 @@ const ProductDetail = () => {
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Modal */}
+      <Dialog open={isFullscreenOpen} onOpenChange={setIsFullscreenOpen}>
+        <DialogContent className="max-w-[95vw] max-h-[95vh] w-full h-full p-4">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold mb-4">
+              {product.name} - Gambar {selectedImageIndex + 1}
+            </DialogTitle>
+          </DialogHeader>
+          
+          <div className="relative flex-1 overflow-hidden rounded-lg bg-gray-100">
+            <div 
+              className="w-full h-[70vh] cursor-pointer relative overflow-hidden"
+              onClick={handleFullscreenImageClick}
+            >
+              <img
+                src={currentImage}
+                alt={product.name}
+                className="w-full h-full object-contain transition-transform duration-200"
+                style={{
+                  transform: `scale(${fullscreenZoom}) translate(${fullscreenPosition.x}px, ${fullscreenPosition.y}px)`,
+                  transformOrigin: 'center'
+                }}
+              />
+            </div>
+            
+            {/* Fullscreen Zoom Controls */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white/90 rounded-lg p-2 shadow-sm">
+              <button
+                onClick={handleFullscreenZoomIn}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                disabled={fullscreenZoom >= 5}
+              >
+                <ZoomIn size={20} className={fullscreenZoom >= 5 ? 'text-gray-400' : 'text-gray-700'} />
+              </button>
+              <button
+                onClick={handleFullscreenZoomOut}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                disabled={fullscreenZoom <= 0.5}
+              >
+                <ZoomOut size={20} className={fullscreenZoom <= 0.5 ? 'text-gray-400' : 'text-gray-700'} />
+              </button>
+              <button
+                onClick={handleFullscreenResetZoom}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+              >
+                <RotateCcw size={20} className="text-gray-700" />
+              </button>
+            </div>
+
+            {/* Fullscreen Zoom Level Indicator */}
+            <div className="absolute bottom-4 left-4 bg-black/70 text-white px-3 py-2 rounded text-base">
+              {Math.round(fullscreenZoom * 100)}%
+            </div>
+          </div>
+
+          {/* Fullscreen Thumbnails */}
+          {productImages.length > 1 && (
+            <div className="flex gap-2 mt-4 overflow-x-auto justify-center">
+              {productImages.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`${product.name} ${index + 1}`}
+                  className={`w-16 h-16 object-cover rounded-lg cursor-pointer border-2 transition-all ${
+                    index === selectedImageIndex 
+                      ? 'border-emerald-500' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => {
+                    setSelectedImageIndex(index);
+                    handleFullscreenResetZoom();
+                  }}
+                />
+              ))}
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
