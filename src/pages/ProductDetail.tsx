@@ -29,7 +29,9 @@ const ProductDetail = () => {
     );
   }
 
-  const currentImage = product.images[selectedImageIndex] || product.images[0];
+  // Safely handle images array
+  const productImages = product.images || [];
+  const currentImage = productImages[selectedImageIndex] || productImages[0] || 'https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=500&h=400&fit=crop';
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -54,9 +56,9 @@ const ProductDetail = () => {
           </div>
           
           {/* Image Thumbnails */}
-          {product.images.length > 1 && (
+          {productImages.length > 1 && (
             <div className="flex gap-2 overflow-x-auto">
-              {product.images.map((image, index) => (
+              {productImages.map((image, index) => (
                 <img
                   key={index}
                   src={image}
