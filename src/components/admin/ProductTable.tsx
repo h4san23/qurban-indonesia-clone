@@ -54,54 +54,62 @@ export const ProductTable = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {products.map((product) => (
-                  <TableRow key={product.id}>
-                    <TableCell>
-                      <div className="flex gap-1">
-                        {product.images.slice(0, 2).map((image, index) => (
-                          <img 
-                            key={index}
-                            src={image} 
-                            alt={`${product.name} ${index + 1}`}
-                            className="w-12 h-12 object-cover rounded-md"
-                          />
-                        ))}
-                        {product.images.length > 2 && (
-                          <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-xs text-gray-600">
-                            +{product.images.length - 2}
-                          </div>
-                        )}
-                      </div>
-                    </TableCell>
-                    <TableCell className="capitalize">{product.type}</TableCell>
-                    <TableCell className="font-medium">{product.name}</TableCell>
-                    <TableCell>{formatPrice(product.price)}</TableCell>
-                    <TableCell>
-                      <Badge variant={product.status === 'tersedia' ? 'default' : 'destructive'}>
-                        {product.status === 'tersedia' ? 'Tersedia' : 'Sold Out'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{product.weight}</TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(product.id)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => handleDelete(product.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                {products.map((product) => {
+                  const productImages = product.images || [];
+                  return (
+                    <TableRow key={product.id}>
+                      <TableCell>
+                        <div className="flex gap-1">
+                          {productImages.slice(0, 2).map((image, index) => (
+                            <img 
+                              key={index}
+                              src={image} 
+                              alt={`${product.name} ${index + 1}`}
+                              className="w-12 h-12 object-cover rounded-md"
+                            />
+                          ))}
+                          {productImages.length > 2 && (
+                            <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-xs text-gray-600">
+                              +{productImages.length - 2}
+                            </div>
+                          )}
+                          {productImages.length === 0 && (
+                            <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-xs text-gray-600">
+                              No Image
+                            </div>
+                          )}
+                        </div>
+                      </TableCell>
+                      <TableCell className="capitalize">{product.type}</TableCell>
+                      <TableCell className="font-medium">{product.name}</TableCell>
+                      <TableCell>{formatPrice(product.price)}</TableCell>
+                      <TableCell>
+                        <Badge variant={product.status === 'tersedia' ? 'default' : 'destructive'}>
+                          {product.status === 'tersedia' ? 'Tersedia' : 'Sold Out'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{product.weight} kg</TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(product.id)}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="destructive"
+                            size="sm"
+                            onClick={() => handleDelete(product.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })}
               </TableBody>
             </Table>
           </div>
