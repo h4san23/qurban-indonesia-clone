@@ -1,24 +1,23 @@
+
 import React from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, Check, MapPin, Calendar, Weight, Phone, MessageCircle } from 'lucide-react';
-import { formatPrice } from '../data/products';
+import { ArrowLeft, MapPin, Calendar, Star, Truck } from 'lucide-react';
 import { useProducts } from '@/contexts/ProductContext';
+import { formatPrice } from '@/data/products';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { getProductById } = useProducts();
+  
   const product = id ? getProductById(id) : undefined;
 
   if (!product) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h2 className="text-2xl font-bold text-gray-800 mb-4">Produk Tidak Ditemukan</h2>
-          <Link
-            to="/products"
-            className="bg-green-600 text-white px-6 py-3 rounded-lg hover:bg-green-700 transition-colors"
-          >
-            Kembali ke Produk
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Produk Tidak Ditemukan</h1>
+          <Link to="/products" className="text-emerald-600 hover:text-emerald-700">
+            ← Kembali ke Produk
           </Link>
         </div>
       </div>
@@ -26,149 +25,90 @@ const ProductDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Breadcrumb */}
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center space-x-2 text-sm">
-            <Link to="/" className="text-gray-500 hover:text-green-600">Beranda</Link>
-            <span className="text-gray-400">/</span>
-            <Link to="/products" className="text-gray-500 hover:text-green-600">Produk</Link>
-            <span className="text-gray-400">/</span>
-            <span className="text-gray-800 font-medium">{product.name}</span>
-          </div>
+    <div className="container mx-auto px-4 py-8">
+      <Link 
+        to="/products" 
+        className="inline-flex items-center text-emerald-600 hover:text-emerald-700 mb-6"
+      >
+        <ArrowLeft className="mr-2" size={20} />
+        Kembali ke Produk
+      </Link>
+
+      <div className="grid md:grid-cols-2 gap-8">
+        <div>
+          <img
+            src={product.image || "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=600&h=400&fit=crop"}
+            alt={product.name}
+            className="w-full rounded-lg shadow-lg"
+          />
+          {product.video && (
+            <div className="mt-4">
+              <video
+                src={product.video}
+                controls
+                className="w-full rounded-lg shadow-lg"
+              >
+                Video tidak dapat diputar
+              </video>
+            </div>
+          )}
         </div>
-      </div>
 
-      <div className="container mx-auto px-4 py-8">
-        <Link
-          to="/products"
-          className="inline-flex items-center text-green-600 hover:text-green-700 mb-6"
-        >
-          <ArrowLeft size={20} className="mr-2" />
-          Kembali ke Produk
-        </Link>
-
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          <div>
-            <img
-              src={product.image}
-              alt={product.name}
-              className="w-full h-96 object-cover rounded-lg shadow-lg"
-            />
+        <div>
+          <div className="flex items-center gap-2 mb-2">
+            <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-medium">
+              {product.type}
+            </span>
+            <span className="text-gray-600 font-mono">#{product.tagNumber}</span>
+          </div>
+          
+          <h1 className="text-3xl font-bold text-gray-800 mb-4">{product.name}</h1>
+          
+          <div className="flex items-center mb-4">
+            <span className="text-3xl font-bold text-emerald-600">
+              {formatPrice(product.price)}
+            </span>
           </div>
 
-          <div>
-            <div className="mb-4">
-              <span className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm font-medium capitalize">
-                {product.type}
+          <div className="space-y-4 mb-6">
+            <div className="flex items-center text-gray-600">
+              <Calendar className="mr-3" size={20} />
+              <span>Berat: {product.weight} kg</span>
+            </div>
+            
+            <div className="flex items-center">
+              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                product.status === 'available' 
+                  ? 'bg-green-100 text-green-800' 
+                  : 'bg-red-100 text-red-800'
+              }`}>
+                {product.status === 'available' ? 'Tersedia' : 'Terjual'}
               </span>
             </div>
-
-            <h1 className="text-3xl font-bold text-gray-800 mb-4">{product.name}</h1>
-            
-            <div className="text-3xl font-bold text-green-600 mb-6">
-              {formatPrice(product.price)}
-            </div>
-
-            <p className="text-gray-600 mb-6 leading-relaxed">
-              {product.description}
-            </p>
-
-            <div className="bg-white rounded-lg p-6 shadow-md mb-6">
-              <h3 className="text-lg font-semibold mb-4">Spesifikasi</h3>
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex items-center">
-                  <Weight className="text-green-600 mr-2" size={20} />
-                  <div>
-                    <div className="text-sm text-gray-500">Berat</div>
-                    <div className="font-medium">{product.weight}</div>
-                  </div>
-                </div>
-                <div className="flex items-center">
-                  <Calendar className="text-green-600 mr-2" size={20} />
-                  <div>
-                    <div className="text-sm text-gray-500">Umur</div>
-                    <div className="font-medium">{product.age}</div>
-                  </div>
-                </div>
-                <div className="flex items-center col-span-2">
-                  <MapPin className="text-green-600 mr-2" size={20} />
-                  <div>
-                    <div className="text-sm text-gray-500">Lokasi</div>
-                    <div className="font-medium">{product.location}</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow-md mb-6">
-              <h3 className="text-lg font-semibold mb-4">Keunggulan</h3>
-              <ul className="space-y-3">
-                {product.features.map((feature, index) => (
-                  <li key={index} className="flex items-center">
-                    <Check className="text-green-600 mr-3 flex-shrink-0" size={20} />
-                    <span>{feature}</span>
-                  </li>
-                ))}
-              </ul>
-            </div>
-
-            <div className="bg-white rounded-lg p-6 shadow-md mb-6">
-              <div className="flex items-center justify-between">
-                <span className="text-gray-600">Status Ketersediaan:</span>
-                <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                  product.stock > 10 
-                    ? 'bg-green-100 text-green-800' 
-                    : product.stock > 5 
-                      ? 'bg-yellow-100 text-yellow-800'
-                      : 'bg-red-100 text-red-800'
-                }`}>
-                  {product.stock} Unit Tersedia
-                </span>
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <a
-                href="tel:+6281234567890"
-                className="w-full bg-green-600 text-white py-3 px-6 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center font-semibold"
-              >
-                <Phone className="mr-2" size={20} />
-                Hubungi Sekarang
-              </a>
-              <a
-                href="https://wa.me/6281234567890"
-                className="w-full border-2 border-green-600 text-green-600 py-3 px-6 rounded-lg hover:bg-green-600 hover:text-white transition-colors flex items-center justify-center font-semibold"
-              >
-                <MessageCircle className="mr-2" size={20} />
-                Chat WhatsApp
-              </a>
-            </div>
           </div>
-        </div>
 
-        <div className="mt-12 bg-white rounded-lg p-8 shadow-md">
-          <h2 className="text-2xl font-bold mb-6">Informasi Tambahan</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            <div>
-              <h3 className="text-lg font-semibold mb-4 text-green-600">Proses Qurban</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>• Penyembelihan sesuai syariat Islam</li>
-                <li>• Dokumentasi lengkap proses qurban</li>
-                <li>• Pembagian daging kepada yang berhak</li>
-                <li>• Laporan distribusi daging</li>
-              </ul>
+          {product.description && (
+            <div className="mb-6">
+              <h3 className="text-lg font-semibold mb-2">Deskripsi</h3>
+              <p className="text-gray-600 leading-relaxed">{product.description}</p>
             </div>
-            <div>
-              <h3 className="text-lg font-semibold mb-4 text-green-600">Layanan Kami</h3>
-              <ul className="space-y-2 text-gray-600">
-                <li>• Konsultasi gratis pemilihan hewan</li>
-                <li>• Pengiriman ke seluruh Indonesia</li>
-                <li>• Garansi kesehatan hewan</li>
-                <li>• Customer service 24/7</li>
-              </ul>
-            </div>
+          )}
+
+          <div className="space-y-4">
+            {product.status === 'available' ? (
+              <>
+                <button className="w-full bg-emerald-600 text-white py-3 px-6 rounded-lg hover:bg-emerald-700 transition-colors font-semibold">
+                  Hubungi Kami untuk Pemesanan
+                </button>
+                <div className="text-center text-sm text-gray-600">
+                  <p>Hubungi +62 812-3456-7890 untuk informasi lebih lanjut</p>
+                </div>
+              </>
+            ) : (
+              <button disabled className="w-full bg-gray-400 text-white py-3 px-6 rounded-lg font-semibold cursor-not-allowed">
+                Produk Sudah Terjual
+              </button>
+            )}
           </div>
         </div>
       </div>
