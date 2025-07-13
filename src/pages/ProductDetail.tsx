@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, ShoppingCart, Heart } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Heart, ZoomIn, ZoomOut, RotateCcw } from 'lucide-react';
 import { useProducts } from '@/contexts/ProductContext';
 import { formatPrice } from '@/data/products';
 
@@ -9,6 +8,8 @@ const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { getProductById } = useProducts();
   const [selectedImageIndex, setSelectedImageIndex] = useState(0);
+  const [zoomLevel, setZoomLevel] = useState(1);
+  const [imagePosition, setImagePosition] = useState({ x: 0, y: 0 });
   
   if (!id) {
     return <div>Product ID not found</div>;
@@ -33,6 +34,28 @@ const ProductDetail = () => {
   const productImages = product.images || [];
   const currentImage = productImages[selectedImageIndex] || productImages[0] || 'https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=500&h=400&fit=crop';
 
+  const handleZoomIn = () => {
+    setZoomLevel(prev => Math.min(prev + 0.5, 3));
+  };
+
+  const handleZoomOut = () => {
+    setZoomLevel(prev => Math.max(prev - 0.5, 0.5));
+  };
+
+  const handleResetZoom = () => {
+    setZoomLevel(1);
+    setImagePosition({ x: 0, y: 0 });
+  };
+
+  const handleImageClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (zoomLevel > 1) {
+      const rect = e.currentTarget.getBoundingClientRect();
+      const x = ((e.clientX - rect.left) / rect.width - 0.5) * -100;
+      const y = ((e.clientY - rect.top) / rect.height - 0.5) * -100;
+      setImagePosition({ x, y });
+    }
+  };
+
   return (
     <div className="container mx-auto px-4 py-8">
       {/* Back Button */}
@@ -47,12 +70,50 @@ const ProductDetail = () => {
       <div className="grid md:grid-cols-2 gap-8">
         {/* Product Images */}
         <div>
-          <div className="mb-4">
-            <img
-              src={currentImage}
-              alt={product.name}
-              className="w-full h-96 object-cover rounded-lg shadow-sm"
-            />
+          <div className="mb-4 relative">
+            <div 
+              className="w-full h-96 rounded-lg shadow-sm overflow-hidden cursor-pointer relative"
+              onClick={handleImageClick}
+            >
+              <img
+                src={currentImage}
+                alt={product.name}
+                className="w-full h-full object-cover transition-transform duration-200"
+                style={{
+                  transform: `scale(${zoomLevel}) translate(${imagePosition.x}px, ${imagePosition.y}px)`,
+                  transformOrigin: 'center'
+                }}
+              />
+            </div>
+            
+            {/* Zoom Controls */}
+            <div className="absolute top-4 right-4 flex flex-col gap-2 bg-white/90 rounded-lg p-2 shadow-sm">
+              <button
+                onClick={handleZoomIn}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                disabled={zoomLevel >= 3}
+              >
+                <ZoomIn size={16} className={zoomLevel >= 3 ? 'text-gray-400' : 'text-gray-700'} />
+              </button>
+              <button
+                onClick={handleZoomOut}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+                disabled={zoomLevel <= 0.5}
+              >
+                <ZoomOut size={16} className={zoomLevel <= 0.5 ? 'text-gray-400' : 'text-gray-700'} />
+              </button>
+              <button
+                onClick={handleResetZoom}
+                className="p-2 hover:bg-gray-100 rounded transition-colors"
+              >
+                <RotateCcw size={16} className="text-gray-700" />
+              </button>
+            </div>
+
+            {/* Zoom Level Indicator */}
+            <div className="absolute bottom-4 left-4 bg-black/70 text-white px-2 py-1 rounded text-sm">
+              {Math.round(zoomLevel * 100)}%
+            </div>
           </div>
           
           {/* Image Thumbnails */}
@@ -68,7 +129,10 @@ const ProductDetail = () => {
                       ? 'border-emerald-500' 
                       : 'border-gray-200 hover:border-gray-300'
                   }`}
-                  onClick={() => setSelectedImageIndex(index)}
+                  onClick={() => {
+                    setSelectedImageIndex(index);
+                    handleResetZoom();
+                  }}
                 />
               ))}
             </div>
