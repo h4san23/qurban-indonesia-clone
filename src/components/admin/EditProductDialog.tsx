@@ -17,7 +17,7 @@ interface ProductFormData {
   tagNumber: string;
   price: number;
   status: 'tersedia' | 'soldout';
-  weight: string;
+  weight: number;
   description: string;
   image: string;
   video?: string;
@@ -41,7 +41,7 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
       tagNumber: '',
       price: 0,
       status: 'tersedia',
-      weight: '',
+      weight: 0,
       description: '',
       image: '',
       video: ''
@@ -200,9 +200,14 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
               name="weight"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Berat</FormLabel>
+                  <FormLabel>Berat (kg)</FormLabel>
                   <FormControl>
-                    <Input placeholder="45-50 kg" {...field} />
+                    <Input 
+                      type="number" 
+                      placeholder="45" 
+                      {...field}
+                      onChange={(e) => field.onChange(Number(e.target.value))}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
