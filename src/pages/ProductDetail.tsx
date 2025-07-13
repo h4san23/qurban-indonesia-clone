@@ -78,11 +78,11 @@ const ProductDetail = () => {
             
             <div className="flex items-center">
               <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                product.status === 'available' 
+                product.status === 'tersedia' 
                   ? 'bg-green-100 text-green-800' 
                   : 'bg-red-100 text-red-800'
               }`}>
-                {product.status === 'available' ? 'Tersedia' : 'Terjual'}
+                {product.status === 'tersedia' ? 'Tersedia' : 'Terjual'}
               </span>
             </div>
           </div>
@@ -95,7 +95,7 @@ const ProductDetail = () => {
           )}
 
           <div className="space-y-4">
-            {product.status === 'available' ? (
+            {product.status === 'tersedia' ? (
               <>
                 <button className="w-full bg-emerald-600 text-white py-3 px-6 rounded-lg hover:bg-emerald-700 transition-colors font-semibold">
                   Hubungi Kami untuk Pemesanan
