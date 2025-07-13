@@ -1,31 +1,39 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { ArrowLeft, MapPin, Calendar, Star, Truck } from 'lucide-react';
+import { ArrowLeft, ShoppingCart, Heart } from 'lucide-react';
 import { useProducts } from '@/contexts/ProductContext';
 import { formatPrice } from '@/data/products';
 
 const ProductDetail = () => {
   const { id } = useParams<{ id: string }>();
   const { getProductById } = useProducts();
+  const [selectedImageIndex, setSelectedImageIndex] = useState(0);
   
-  const product = id ? getProductById(id) : undefined;
+  if (!id) {
+    return <div>Product ID not found</div>;
+  }
+
+  const product = getProductById(id);
 
   if (!product) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">Produk Tidak Ditemukan</h1>
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Produk tidak ditemukan</h1>
           <Link to="/products" className="text-emerald-600 hover:text-emerald-700">
-            ← Kembali ke Produk
+            Kembali ke daftar produk
           </Link>
         </div>
       </div>
     );
   }
 
+  const currentImage = product.images[selectedImageIndex] || product.images[0];
+
   return (
     <div className="container mx-auto px-4 py-8">
+      {/* Back Button */}
       <Link 
         to="/products" 
         className="inline-flex items-center text-emerald-600 hover:text-emerald-700 mb-6"
@@ -35,80 +43,100 @@ const ProductDetail = () => {
       </Link>
 
       <div className="grid md:grid-cols-2 gap-8">
+        {/* Product Images */}
         <div>
-          <img
-            src={product.image || "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=600&h=400&fit=crop"}
-            alt={product.name}
-            className="w-full rounded-lg shadow-lg"
-          />
-          {product.video && (
-            <div className="mt-4">
-              <video
-                src={product.video}
-                controls
-                className="w-full rounded-lg shadow-lg"
-              >
-                Video tidak dapat diputar
-              </video>
+          <div className="mb-4">
+            <img
+              src={currentImage}
+              alt={product.name}
+              className="w-full h-96 object-cover rounded-lg shadow-sm"
+            />
+          </div>
+          
+          {/* Image Thumbnails */}
+          {product.images.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto">
+              {product.images.map((image, index) => (
+                <img
+                  key={index}
+                  src={image}
+                  alt={`${product.name} ${index + 1}`}
+                  className={`w-20 h-20 object-cover rounded-lg cursor-pointer border-2 transition-all ${
+                    index === selectedImageIndex 
+                      ? 'border-emerald-500' 
+                      : 'border-gray-200 hover:border-gray-300'
+                  }`}
+                  onClick={() => setSelectedImageIndex(index)}
+                />
+              ))}
             </div>
           )}
         </div>
 
+        {/* Product Info */}
         <div>
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-4">
             <span className="bg-emerald-100 text-emerald-800 px-3 py-1 rounded-full text-sm font-medium">
-              {product.type}
+              {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
             </span>
-            <span className="text-gray-600 font-mono">#{product.tagNumber}</span>
           </div>
-          
+
           <h1 className="text-3xl font-bold text-gray-800 mb-4">{product.name}</h1>
           
-          <div className="flex items-center mb-4">
+          <div className="mb-6">
             <span className="text-3xl font-bold text-emerald-600">
               {formatPrice(product.price)}
             </span>
           </div>
 
-          <div className="space-y-4 mb-6">
-            <div className="flex items-center text-gray-600">
-              <Calendar className="mr-3" size={20} />
-              <span>Berat: {product.weight} kg</span>
+          <div className="grid grid-cols-2 gap-4 mb-6">
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <span className="text-gray-600 text-sm">Berat</span>
+              <p className="font-semibold">{product.weight} kg</p>
             </div>
-            
-            <div className="flex items-center">
-              <span className={`px-3 py-1 rounded-full text-sm font-medium ${
-                product.status === 'tersedia' 
-                  ? 'bg-green-100 text-green-800' 
-                  : 'bg-red-100 text-red-800'
+            <div className="bg-gray-50 p-3 rounded-lg">
+              <span className="text-gray-600 text-sm">Status</span>
+              <p className={`font-semibold ${
+                product.status === 'tersedia' ? 'text-green-600' : 'text-red-600'
               }`}>
                 {product.status === 'tersedia' ? 'Tersedia' : 'Terjual'}
-              </span>
+              </p>
             </div>
           </div>
 
-          {product.description && (
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold mb-2">Deskripsi</h3>
-              <p className="text-gray-600 leading-relaxed">{product.description}</p>
-            </div>
-          )}
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-gray-800 mb-2">Deskripsi</h3>
+            <p className="text-gray-600 leading-relaxed">{product.description}</p>
+          </div>
 
-          <div className="space-y-4">
-            {product.status === 'tersedia' ? (
-              <>
-                <button className="w-full bg-emerald-600 text-white py-3 px-6 rounded-lg hover:bg-emerald-700 transition-colors font-semibold">
-                  Hubungi Kami untuk Pemesanan
-                </button>
-                <div className="text-center text-sm text-gray-600">
-                  <p>Hubungi +62 812-3456-7890 untuk informasi lebih lanjut</p>
-                </div>
-              </>
-            ) : (
-              <button disabled className="w-full bg-gray-400 text-white py-3 px-6 rounded-lg font-semibold cursor-not-allowed">
-                Produk Sudah Terjual
-              </button>
-            )}
+          {/* Action Buttons */}
+          <div className="flex gap-4">
+            <button
+              className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors ${
+                product.status === 'tersedia'
+                  ? 'bg-emerald-600 text-white hover:bg-emerald-700'
+                  : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+              }`}
+              disabled={product.status !== 'tersedia'}
+            >
+              <ShoppingCart className="inline mr-2" size={20} />
+              {product.status === 'tersedia' ? 'Pesan Sekarang' : 'Tidak Tersedia'}
+            </button>
+            
+            <button className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+              <Heart className="inline" size={20} />
+            </button>
+          </div>
+
+          {/* Additional Info */}
+          <div className="mt-8 p-4 bg-blue-50 rounded-lg">
+            <h4 className="font-semibold text-blue-800 mb-2">Informasi Penting</h4>
+            <ul className="text-blue-700 text-sm space-y-1">
+              <li>• Hewan telah diperiksa kesehatan dan kualitasnya</li>
+              <li>• Memenuhi syarat syariat Islam untuk qurban</li>
+              <li>• Gratis konsultasi sebelum pembelian</li>
+              <li>• Garansi kualitas 100%</li>
+            </ul>
           </div>
         </div>
       </div>

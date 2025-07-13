@@ -1,7 +1,7 @@
 
 import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
-import { Search, Filter, SlidersHorizontal } from 'lucide-react';
+import { Search, SlidersHorizontal } from 'lucide-react';
 import { useProducts } from '@/contexts/ProductContext';
 import { formatPrice } from '@/data/products';
 
@@ -33,16 +33,15 @@ const Products = () => {
 
   const filteredProducts = useMemo(() => {
     return products.filter(product => {
-      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           product.tagNumber.toLowerCase().includes(searchTerm.toLowerCase());
+      const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = selectedType === 'semua' || product.type === selectedType;
       
-      const minPrice = priceRange.min ? parseFloat(priceRange.min) : 0;
-      const maxPrice = priceRange.max ? parseFloat(priceRange.max) : Infinity;
+      const minPrice = priceRange.min ? Number(priceRange.min) : 0;
+      const maxPrice = priceRange.max ? Number(priceRange.max) : Infinity;
       const matchesPrice = product.price >= minPrice && product.price <= maxPrice;
       
-      const minWeight = weightRange.min ? parseFloat(weightRange.min) : 0;
-      const maxWeight = weightRange.max ? parseFloat(weightRange.max) : Infinity;
+      const minWeight = weightRange.min ? Number(weightRange.min) : 0;
+      const maxWeight = weightRange.max ? Number(weightRange.max) : Infinity;
       const matchesWeight = product.weight >= minWeight && product.weight <= maxWeight;
 
       return matchesSearch && matchesType && matchesPrice && matchesWeight;
@@ -63,7 +62,7 @@ const Products = () => {
             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
             <input
               type="text"
-              placeholder="Cari berdasarkan nama atau nomor tag..."
+              placeholder="Cari berdasarkan nama produk..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500"
@@ -77,7 +76,7 @@ const Products = () => {
           >
             {productTypes.map(type => (
               <option key={type} value={type}>
-                {type === 'semua' ? 'Semua Jenis' : type}
+                {type === 'semua' ? 'Semua Jenis' : type.charAt(0).toUpperCase() + type.slice(1)}
               </option>
             ))}
           </select>
@@ -87,11 +86,11 @@ const Products = () => {
             className="flex items-center px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
           >
             <SlidersHorizontal className="mr-2" size={16} />
-            Filter Lanjutan
+            Filter Harga & Berat
           </button>
         </div>
 
-        {/* Advanced Filters */}
+        {/* Advanced Filters - Only Price and Weight */}
         {showFilters && (
           <div className="grid md:grid-cols-2 gap-4 pt-4 border-t">
             <div>
@@ -153,16 +152,18 @@ const Products = () => {
         {filteredProducts.map((product) => (
           <div key={product.id} className="bg-white rounded-lg shadow-sm border hover:shadow-md transition-shadow">
             <img
-              src={product.image || "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=400&h=250&fit=crop"}
+              src={product.images[0] || "https://images.unsplash.com/photo-1560114928-40f1f1eb26a0?w=400&h=250&fit=crop"}
               alt={product.name}
               className="w-full h-48 object-cover rounded-t-lg"
             />
             <div className="p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="bg-emerald-100 text-emerald-800 px-2 py-1 rounded text-xs font-medium">
-                  {product.type}
+                  {product.type.charAt(0).toUpperCase() + product.type.slice(1)}
                 </span>
-                <span className="text-gray-500 font-mono text-sm">#{product.tagNumber}</span>
+                {product.images.length > 1 && (
+                  <span className="text-gray-500 text-xs">{product.images.length} foto</span>
+                )}
               </div>
               
               <h3 className="text-lg font-semibold text-gray-800 mb-2">{product.name}</h3>

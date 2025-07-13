@@ -1,11 +1,12 @@
 
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Plus, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { Product } from '@/data/products';
 import { useToast } from "@/hooks/use-toast";
@@ -14,13 +15,11 @@ import { useProducts } from '@/contexts/ProductContext';
 interface ProductFormData {
   name: string;
   type: 'kambing' | 'sapi' | 'domba';
-  tagNumber: string;
   price: number;
   status: 'tersedia' | 'soldout';
   weight: number;
   description: string;
-  image: string;
-  video?: string;
+  images: string[];
 }
 
 interface EditProductDialogProps {
@@ -33,51 +32,71 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
   const { getProductById, updateProduct } = useProducts();
   const { toast } = useToast();
   const product = getProductById(productId);
+  const [imageUrls, setImageUrls] = useState<string[]>(['']);
   
   const form = useForm<ProductFormData>({
     defaultValues: {
       name: '',
       type: 'kambing',
-      tagNumber: '',
       price: 0,
       status: 'tersedia',
       weight: 0,
       description: '',
-      image: '',
-      video: ''
+      images: ['']
     }
   });
 
   useEffect(() => {
     if (product) {
+      const urls = product.images.length > 0 ? product.images : [''];
+      setImageUrls(urls);
       form.reset({
         name: product.name,
         type: product.type,
-        tagNumber: product.tagNumber,
         price: product.price,
         status: product.status,
         weight: product.weight,
         description: product.description,
-        image: product.image,
-        video: product.video || ''
+        images: urls
       });
     }
   }, [product, form]);
 
+  const addImageField = () => {
+    if (imageUrls.length < 3) {
+      const newUrls = [...imageUrls, ''];
+      setImageUrls(newUrls);
+      form.setValue('images', newUrls);
+    }
+  };
+
+  const removeImageField = (index: number) => {
+    const newUrls = imageUrls.filter((_, i) => i !== index);
+    setImageUrls(newUrls);
+    form.setValue('images', newUrls);
+  };
+
+  const updateImageUrl = (index: number, value: string) => {
+    const newUrls = [...imageUrls];
+    newUrls[index] = value;
+    setImageUrls(newUrls);
+    form.setValue('images', newUrls);
+  };
+
   const onSubmit = (data: ProductFormData) => {
     if (!product) return;
+
+    const validImages = imageUrls.filter(url => url.trim() !== '');
 
     const updatedProduct: Product = {
       ...product,
       name: data.name,
       type: data.type,
-      tagNumber: data.tagNumber,
       price: data.price,
       status: data.status,
       weight: data.weight,
       description: data.description,
-      image: data.image,
-      video: data.video
+      images: validImages.length > 0 ? validImages : product.images
     };
 
     updateProduct(productId, updatedProduct);
@@ -113,44 +132,28 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="type"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Jenis Hewan</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih jenis hewan" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="kambing">Kambing</SelectItem>
-                        <SelectItem value="sapi">Sapi</SelectItem>
-                        <SelectItem value="domba">Domba</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="tagNumber"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Nomor Tag</FormLabel>
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Jenis Hewan</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
-                      <Input placeholder="Contoh: KMB001" {...field} />
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih jenis hewan" />
+                      </SelectTrigger>
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
+                    <SelectContent>
+                      <SelectItem value="kambing">Kambing</SelectItem>
+                      <SelectItem value="sapi">Sapi</SelectItem>
+                      <SelectItem value="domba">Domba</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
 
             <div className="grid grid-cols-2 gap-4">
               <FormField
@@ -214,33 +217,43 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
               )}
             />
 
-            <FormField
-              control={form.control}
-              name="image"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL Gambar</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/image.jpg" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="video"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>URL Video (Opsional)</FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://example.com/video.mp4" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            <div>
+              <FormLabel>Foto Produk (Maksimal 3)</FormLabel>
+              <div className="space-y-2 mt-2">
+                {imageUrls.map((url, index) => (
+                  <div key={index} className="flex gap-2">
+                    <Input
+                      placeholder={`URL Foto ${index + 1}`}
+                      value={url}
+                      onChange={(e) => updateImageUrl(index, e.target.value)}
+                      className="flex-1"
+                    />
+                    {imageUrls.length > 1 && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => removeImageField(index)}
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+                {imageUrls.length < 3 && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={addImageField}
+                    className="w-full"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Tambah Foto
+                  </Button>
+                )}
+              </div>
+            </div>
 
             <FormField
               control={form.control}

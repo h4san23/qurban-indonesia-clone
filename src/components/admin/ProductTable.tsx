@@ -46,7 +46,6 @@ export const ProductTable = () => {
                 <TableRow>
                   <TableHead>Gambar</TableHead>
                   <TableHead>Jenis</TableHead>
-                  <TableHead>No Tag</TableHead>
                   <TableHead>Nama</TableHead>
                   <TableHead>Harga</TableHead>
                   <TableHead>Status</TableHead>
@@ -58,14 +57,23 @@ export const ProductTable = () => {
                 {products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell>
-                      <img 
-                        src={product.image} 
-                        alt={product.name}
-                        className="w-16 h-16 object-cover rounded-md"
-                      />
+                      <div className="flex gap-1">
+                        {product.images.slice(0, 2).map((image, index) => (
+                          <img 
+                            key={index}
+                            src={image} 
+                            alt={`${product.name} ${index + 1}`}
+                            className="w-12 h-12 object-cover rounded-md"
+                          />
+                        ))}
+                        {product.images.length > 2 && (
+                          <div className="w-12 h-12 bg-gray-100 rounded-md flex items-center justify-center text-xs text-gray-600">
+                            +{product.images.length - 2}
+                          </div>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="capitalize">{product.type}</TableCell>
-                    <TableCell className="font-mono text-sm">{product.tagNumber}</TableCell>
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>{formatPrice(product.price)}</TableCell>
                     <TableCell>
