@@ -16,14 +16,13 @@ import { useProducts } from '@/contexts/ProductContext';
 interface ProductFormData {
   name: string;
   type: 'kambing' | 'sapi' | 'domba';
+  tagNumber: string;
   price: number;
+  status: 'tersedia' | 'soldout';
   weight: string;
-  age: string;
   description: string;
   image: string;
-  features: string;
-  stock: number;
-  location: string;
+  video?: string;
 }
 
 export const AddProductDialog = () => {
@@ -35,14 +34,13 @@ export const AddProductDialog = () => {
     defaultValues: {
       name: '',
       type: 'kambing',
+      tagNumber: '',
       price: 0,
+      status: 'tersedia',
       weight: '',
-      age: '',
       description: '',
       image: '',
-      features: '',
-      stock: 0,
-      location: ''
+      video: ''
     }
   });
 
@@ -51,14 +49,13 @@ export const AddProductDialog = () => {
       id: (Date.now()).toString(),
       name: data.name,
       type: data.type,
+      tagNumber: data.tagNumber,
       price: data.price,
+      status: data.status,
       weight: data.weight,
-      age: data.age,
       description: data.description,
       image: data.image || 'https://images.unsplash.com/photo-1551728088-6d4b1c663c7a?w=500&h=400&fit=crop',
-      features: data.features.split(',').map(f => f.trim()),
-      stock: data.stock,
-      location: data.location
+      video: data.video
     };
 
     addProduct(newProduct);
@@ -110,28 +107,44 @@ export const AddProductDialog = () => {
                   )}
                 />
 
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jenis Hewan</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                <div className="grid grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Jenis Hewan</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih jenis hewan" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="kambing">Kambing</SelectItem>
+                            <SelectItem value="sapi">Sapi</SelectItem>
+                            <SelectItem value="domba">Domba</SelectItem>
+                          </SelectContent>
+                        </Select>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="tagNumber"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nomor Tag</FormLabel>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih jenis hewan" />
-                          </SelectTrigger>
+                          <Input placeholder="Contoh: KMB001" {...field} />
                         </FormControl>
-                        <SelectContent>
-                          <SelectItem value="kambing">Kambing</SelectItem>
-                          <SelectItem value="sapi">Sapi</SelectItem>
-                          <SelectItem value="domba">Domba</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
 
                 <div className="grid grid-cols-2 gap-4">
                   <FormField
@@ -155,48 +168,21 @@ export const AddProductDialog = () => {
 
                   <FormField
                     control={form.control}
-                    name="stock"
+                    name="status"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Stok</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="15" 
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="weight"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Berat</FormLabel>
-                        <FormControl>
-                          <Input placeholder="45-50 kg" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="age"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Umur</FormLabel>
-                        <FormControl>
-                          <Input placeholder="2-3 tahun" {...field} />
-                        </FormControl>
+                        <FormLabel>Status</FormLabel>
+                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                          <FormControl>
+                            <SelectTrigger>
+                              <SelectValue placeholder="Pilih status" />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="tersedia">Tersedia</SelectItem>
+                            <SelectItem value="soldout">Sold Out</SelectItem>
+                          </SelectContent>
+                        </Select>
                         <FormMessage />
                       </FormItem>
                     )}
@@ -205,12 +191,12 @@ export const AddProductDialog = () => {
 
                 <FormField
                   control={form.control}
-                  name="location"
+                  name="weight"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Lokasi</FormLabel>
+                      <FormLabel>Berat</FormLabel>
                       <FormControl>
-                        <Input placeholder="Bogor, Jawa Barat" {...field} />
+                        <Input placeholder="45-50 kg" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -233,12 +219,12 @@ export const AddProductDialog = () => {
 
                 <FormField
                   control={form.control}
-                  name="features"
+                  name="video"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Fitur (pisahkan dengan koma)</FormLabel>
+                      <FormLabel>URL Video (Opsional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="Sehat dan Gemuk, Bersertifikat Halal, Gratis Pengiriman" {...field} />
+                        <Input placeholder="https://example.com/video.mp4" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>

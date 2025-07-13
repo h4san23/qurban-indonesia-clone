@@ -5,6 +5,7 @@ import { Product, products as initialProducts } from '@/data/products';
 interface ProductContextType {
   products: Product[];
   addProduct: (product: Product) => void;
+  updateProduct: (id: string, product: Product) => void;
   deleteProduct: (id: string) => void;
   getProductById: (id: string) => Product | undefined;
   getProductsByType: (type?: string) => Product[];
@@ -53,6 +54,12 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
     setProducts(prev => [...prev, product]);
   };
 
+  const updateProduct = (id: string, updatedProduct: Product) => {
+    setProducts(prev => prev.map(product => 
+      product.id === id ? updatedProduct : product
+    ));
+  };
+
   const deleteProduct = (id: string) => {
     setProducts(prev => prev.filter(product => product.id !== id));
   };
@@ -71,6 +78,7 @@ export const ProductProvider: React.FC<ProductProviderProps> = ({ children }) =>
       value={{
         products,
         addProduct,
+        updateProduct,
         deleteProduct,
         getProductById,
         getProductsByType,
