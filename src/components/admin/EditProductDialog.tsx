@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -48,7 +47,9 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
 
   useEffect(() => {
     if (product) {
-      const urls = product.images.length > 0 ? product.images : [''];
+      // Safely handle images array
+      const productImages = product.images || [];
+      const urls = productImages.length > 0 ? productImages : [''];
       setImageUrls(urls);
       form.reset({
         name: product.name,
@@ -96,7 +97,7 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
       status: data.status,
       weight: data.weight,
       description: data.description,
-      images: validImages.length > 0 ? validImages : product.images
+      images: validImages.length > 0 ? validImages : (product.images || [])
     };
 
     updateProduct(productId, updatedProduct);
