@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Clock } from 'lucide-react';
@@ -14,25 +13,6 @@ const Layout = ({ children }: { children: React.ReactNode }) => {
       {/* Header */}
       <header className="bg-white shadow-sm border-b border-emerald-100">
         <div className="container mx-auto px-4">
-          {/* Top Bar */}
-          <div className="flex justify-between items-center py-2 text-sm text-gray-600 border-b border-gray-100">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <Phone className="h-4 w-4" />
-                <span>+62 812-3456-7890</span>
-              </div>
-              <div className="flex items-center space-x-1">
-                <Mail className="h-4 w-4" />
-                <span>info@almunawwirfarm.com</span>
-              </div>
-            </div>
-            <div className="flex items-center space-x-2">
-              <Facebook className="h-4 w-4 hover:text-emerald-600 cursor-pointer" />
-              <Instagram className="h-4 w-4 hover:text-emerald-600 cursor-pointer" />
-              <Twitter className="h-4 w-4 hover:text-emerald-600 cursor-pointer" />
-            </div>
-          </div>
-
           {/* Main Navigation */}
           <nav className="flex items-center justify-between py-4">
             <Link to="/" className="flex items-center space-x-2">
