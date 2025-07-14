@@ -1,12 +1,19 @@
 
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
+import { Home, Package, Info, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   
   const isActive = (path: string) => location.pathname === path;
+
+  const handleLogout = () => {
+    if (confirm('Apakah Anda yakin ingin keluar?')) {
+      window.location.href = '/';
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -34,12 +41,39 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               >
                 Dashboard
               </Link>
-              <Link
-                to="/"
-                className="text-emerald-100 hover:text-white font-medium transition-colors"
+              
+              <div className="border-l border-emerald-600 pl-6 flex items-center space-x-4">
+                <span className="text-emerald-100 text-sm">Lihat Website:</span>
+                <Link
+                  to="/"
+                  className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
+                >
+                  <Home className="h-4 w-4" />
+                  <span>Beranda</span>
+                </Link>
+                <Link
+                  to="/products"
+                  className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
+                >
+                  <Package className="h-4 w-4" />
+                  <span>Produk</span>
+                </Link>
+                <Link
+                  to="/about"
+                  className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
+                >
+                  <Info className="h-4 w-4" />
+                  <span>Tentang</span>
+                </Link>
+              </div>
+              
+              <button
+                onClick={handleLogout}
+                className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
               >
-                Lihat Website
-              </Link>
+                <LogOut className="h-4 w-4" />
+                <span>Keluar</span>
+              </button>
             </div>
           </nav>
         </div>

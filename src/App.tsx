@@ -12,6 +12,7 @@ import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import About from "./pages/About";
 import Admin from "./pages/Admin";
+import Login from "./pages/Login";
 
 const queryClient = new QueryClient();
 
@@ -44,6 +45,9 @@ const App = () => (
                 <About />
               </PublicLayout>
             } />
+            
+            {/* Login Route */}
+            <Route path="/login" element={<Login />} />
             
             {/* Admin Routes */}
             <Route path="/admin" element={
