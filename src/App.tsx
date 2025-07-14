@@ -55,6 +55,26 @@ const App = () => (
                 <Admin />
               </AdminLayout>
             } />
+            <Route path="/admin/home" element={
+              <AdminLayout>
+                <Home />
+              </AdminLayout>
+            } />
+            <Route path="/admin/products" element={
+              <AdminLayout>
+                <Products />
+              </AdminLayout>
+            } />
+            <Route path="/admin/product/:id" element={
+              <AdminLayout>
+                <ProductDetail />
+              </AdminLayout>
+            } />
+            <Route path="/admin/about" element={
+              <AdminLayout>
+                <About />
+              </AdminLayout>
+            } />
           </Routes>
         </BrowserRouter>
       </ProductProvider>
