@@ -5,7 +5,8 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { ProductProvider } from "./contexts/ProductContext";
-import Layout from "./components/Layout";
+import PublicLayout from "./components/PublicLayout";
+import AdminLayout from "./components/AdminLayout";
 import Home from "./pages/Home";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
@@ -21,15 +22,36 @@ const App = () => (
         <Toaster />
         <Sonner />
         <BrowserRouter>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/products" element={<Products />} />
-              <Route path="/product/:id" element={<ProductDetail />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/admin" element={<Admin />} />
-            </Routes>
-          </Layout>
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={
+              <PublicLayout>
+                <Home />
+              </PublicLayout>
+            } />
+            <Route path="/products" element={
+              <PublicLayout>
+                <Products />
+              </PublicLayout>
+            } />
+            <Route path="/product/:id" element={
+              <PublicLayout>
+                <ProductDetail />
+              </PublicLayout>
+            } />
+            <Route path="/about" element={
+              <PublicLayout>
+                <About />
+              </PublicLayout>
+            } />
+            
+            {/* Admin Routes */}
+            <Route path="/admin" element={
+              <AdminLayout>
+                <Admin />
+              </AdminLayout>
+            } />
+          </Routes>
         </BrowserRouter>
       </ProductProvider>
     </TooltipProvider>
