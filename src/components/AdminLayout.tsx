@@ -1,45 +1,17 @@
 
 import React from 'react';
-import { Link, useLocation, Routes, Route } from 'react-router-dom';
-import { Home, Package, Info, LogOut, Settings } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Package, Info, LogOut } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Home from '@/pages/Home';
-import Products from '@/pages/Products';
-import ProductDetail from '@/pages/ProductDetail';
-import About from '@/pages/About';
-import Admin from '@/pages/Admin';
 
 const AdminLayout = ({ children }: { children: React.ReactNode }) => {
   const location = useLocation();
   
-  const isActive = (path: string) => {
-    if (path === '/admin' && location.pathname === '/admin') return true;
-    if (path === '/admin/home' && location.pathname === '/admin/home') return true;
-    if (path === '/admin/products' && location.pathname === '/admin/products') return true;
-    if (path === '/admin/about' && location.pathname === '/admin/about') return true;
-    if (path.startsWith('/admin/product/') && location.pathname.startsWith('/admin/product/')) return true;
-    return false;
-  };
+  const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = () => {
     if (confirm('Apakah Anda yakin ingin keluar?')) {
       window.location.href = '/';
-    }
-  };
-
-  const renderContent = () => {
-    const path = location.pathname;
-    
-    if (path === '/admin/home') {
-      return <Home />;
-    } else if (path === '/admin/products') {
-      return <Products />;
-    } else if (path.startsWith('/admin/product/')) {
-      return <ProductDetail />;
-    } else if (path === '/admin/about') {
-      return <About />;
-    } else {
-      return children;
     }
   };
 
@@ -63,42 +35,32 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               <Link
                 to="/admin"
                 className={cn(
-                  "text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1",
+                  "text-emerald-100 hover:text-white font-medium transition-colors",
                   isActive('/admin') && "text-white border-b-2 border-emerald-300"
                 )}
               >
-                <Settings className="h-4 w-4" />
-                <span>Dashboard</span>
+                Dashboard
               </Link>
               
               <div className="border-l border-emerald-600 pl-6 flex items-center space-x-4">
                 <span className="text-emerald-100 text-sm">Lihat Website:</span>
                 <Link
-                  to="/admin/home"
-                  className={cn(
-                    "text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1",
-                    isActive('/admin/home') && "text-white border-b-2 border-emerald-300"
-                  )}
+                  to="/"
+                  className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
                 >
                   <Home className="h-4 w-4" />
                   <span>Beranda</span>
                 </Link>
                 <Link
-                  to="/admin/products"
-                  className={cn(
-                    "text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1",
-                    isActive('/admin/products') && "text-white border-b-2 border-emerald-300"
-                  )}
+                  to="/products"
+                  className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
                 >
                   <Package className="h-4 w-4" />
                   <span>Produk</span>
                 </Link>
                 <Link
-                  to="/admin/about"
-                  className={cn(
-                    "text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1",
-                    isActive('/admin/about') && "text-white border-b-2 border-emerald-300"
-                  )}
+                  to="/about"
+                  className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
                 >
                   <Info className="h-4 w-4" />
                   <span>Tentang</span>
@@ -118,7 +80,7 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
       </header>
 
       {/* Main Content */}
-      <main>{renderContent()}</main>
+      <main>{children}</main>
     </div>
   );
 };
