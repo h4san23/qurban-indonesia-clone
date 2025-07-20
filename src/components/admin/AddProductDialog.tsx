@@ -1,289 +1,212 @@
-
 import React, { useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, X } from 'lucide-react';
+import { Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
-import { Product } from '@/data/products';
-import { useToast } from "@/hooks/use-toast";
 import { useProducts } from '@/contexts/ProductContext';
+import { useToast } from '@/hooks/use-toast';
+import { Product } from '@/data/products';
 
 interface ProductFormData {
   name: string;
   type: 'kambing' | 'sapi' | 'domba';
-  price: number;
-  status: 'tersedia' | 'soldout';
-  weight: number;
+  price: string;
+  weight: string;
   description: string;
-  images: string[];
+  images: string;
 }
 
 export const AddProductDialog = () => {
+  const [open, setOpen] = useState(false);
   const { addProduct } = useProducts();
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [imageUrls, setImageUrls] = useState<string[]>(['']);
   const { toast } = useToast();
   
   const form = useForm<ProductFormData>({
     defaultValues: {
       name: '',
       type: 'kambing',
-      price: 0,
-      status: 'tersedia',
-      weight: 0,
+      price: '',
+      weight: '',
       description: '',
-      images: ['']
-    }
+      images: '',
+    },
   });
 
-  const addImageField = () => {
-    if (imageUrls.length < 3) {
-      const newUrls = [...imageUrls, ''];
-      setImageUrls(newUrls);
-      form.setValue('images', newUrls);
-    }
-  };
-
-  const removeImageField = (index: number) => {
-    const newUrls = imageUrls.filter((_, i) => i !== index);
-    setImageUrls(newUrls);
-    form.setValue('images', newUrls);
-  };
-
-  const updateImageUrl = (index: number, value: string) => {
-    const newUrls = [...imageUrls];
-    newUrls[index] = value;
-    setImageUrls(newUrls);
-    form.setValue('images', newUrls);
-  };
-
   const onSubmit = (data: ProductFormData) => {
-    const validImages = imageUrls.filter(url => url.trim() !== '');
-    
     const newProduct: Product = {
-      id: (Date.now()).toString(),
+      id: Date.now().toString(),
       name: data.name,
       type: data.type,
-      price: data.price,
-      status: data.status,
-      weight: data.weight,
+      price: parseInt(data.price),
+      weight: parseInt(data.weight),
+      status: 'tersedia',
       description: data.description,
-      images: validImages.length > 0 ? validImages : ['https://images.unsplash.com/photo-1551728088-6d4b1c663c7a?w=500&h=400&fit=crop']
+      images: data.images.split(',').map(url => url.trim()).filter(url => url),
     };
 
     addProduct(newProduct);
-    form.reset();
-    setImageUrls(['']);
-    setIsAddDialogOpen(false);
     
     toast({
       title: "Produk berhasil ditambahkan",
-      description: `${data.name} telah ditambahkan ke katalog.`,
+      description: `${newProduct.name} telah ditambahkan ke database.`,
     });
+    
+    setOpen(false);
+    form.reset();
   };
 
   return (
-    <Card className="mb-8">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Plus className="h-5 w-5" />
-          Tambah Produk Baru
-        </CardTitle>
-        <CardDescription>
-          Tambahkan produk hewan qurban baru ke katalog
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button className="bg-emerald-600 hover:bg-emerald-700">
-              <Plus className="h-4 w-4 mr-2" />
-              Tambah Produk
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>Tambah Produk Baru</DialogTitle>
-            </DialogHeader>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Nama Produk</FormLabel>
-                      <FormControl>
-                        <Input placeholder="Contoh: Kambing Etawa Super" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="type"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Jenis Hewan</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Pilih jenis hewan" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="kambing">Kambing</SelectItem>
-                          <SelectItem value="sapi">Sapi</SelectItem>
-                          <SelectItem value="domba">Domba</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="grid grid-cols-2 gap-4">
-                  <FormField
-                    control={form.control}
-                    name="price"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Harga (IDR)</FormLabel>
-                        <FormControl>
-                          <Input 
-                            type="number" 
-                            placeholder="3500000" 
-                            {...field}
-                            onChange={(e) => field.onChange(Number(e.target.value))}
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-
-                  <FormField
-                    control={form.control}
-                    name="status"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Status</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Pilih status" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="tersedia">Tersedia</SelectItem>
-                            <SelectItem value="soldout">Sold Out</SelectItem>
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="weight"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Berat (kg)</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="number" 
-                          placeholder="45" 
-                          {...field}
-                          onChange={(e) => field.onChange(Number(e.target.value))}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div>
-                  <FormLabel>Foto Produk (Maksimal 3)</FormLabel>
-                  <div className="space-y-2 mt-2">
-                    {imageUrls.map((url, index) => (
-                      <div key={index} className="flex gap-2">
-                        <Input
-                          placeholder={`URL Foto ${index + 1}`}
-                          value={url}
-                          onChange={(e) => updateImageUrl(index, e.target.value)}
-                          className="flex-1"
-                        />
-                        {imageUrls.length > 1 && (
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => removeImageField(index)}
-                          >
-                            <X className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                    ))}
-                    {imageUrls.length < 3 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={addImageField}
-                        className="w-full"
-                      >
-                        <Plus className="h-4 w-4 mr-2" />
-                        Tambah Foto
-                      </Button>
-                    )}
-                  </div>
-                </div>
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Deskripsi</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          placeholder="Deskripsi lengkap produk..."
-                          className="min-h-[100px]"
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button
-                    type="button"
-                    variant="outline"
-                    onClick={() => setIsAddDialogOpen(false)}
-                  >
-                    Batal
-                  </Button>
-                  <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                    Tambah Produk
-                  </Button>
-                </div>
-              </form>
-            </Form>
-          </DialogContent>
-        </Dialog>
-      </CardContent>
-    </Card>
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button className="mb-6">
+          <Plus className="mr-2 h-4 w-4" />
+          Tambah Produk
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle>Tambah Produk Baru</DialogTitle>
+          <DialogDescription>
+            Tambahkan hewan qurban baru ke database.
+          </DialogDescription>
+        </DialogHeader>
+        
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Nama Produk</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Nama hewan qurban" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="type"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Jenis Hewan</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih jenis hewan" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="kambing">Kambing</SelectItem>
+                      <SelectItem value="sapi">Sapi</SelectItem>
+                      <SelectItem value="domba">Domba</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Harga (Rp)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="3500000" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="weight"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Berat (kg)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="45" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL Gambar</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://example.com/image.jpg" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="description"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Deskripsi</FormLabel>
+                  <FormControl>
+                    <Textarea
+                      placeholder="Deskripsi hewan qurban..."
+                      className="resize-none"
+                      {...field}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <div className="flex justify-end space-x-2">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setOpen(false)}
+              >
+                Batal
+              </Button>
+              <Button type="submit">Tambah Produk</Button>
+            </div>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
   );
 };

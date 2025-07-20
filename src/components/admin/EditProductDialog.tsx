@@ -1,122 +1,104 @@
-import React, { useEffect, useState } from 'react';
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Plus, X } from 'lucide-react';
+import React, { useState } from 'react';
+import { Edit } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
 import { useForm } from 'react-hook-form';
-import { Product } from '@/data/products';
-import { useToast } from "@/hooks/use-toast";
 import { useProducts } from '@/contexts/ProductContext';
+import { useToast } from '@/hooks/use-toast';
+import { Product } from '@/data/products';
 
 interface ProductFormData {
   name: string;
   type: 'kambing' | 'sapi' | 'domba';
-  price: number;
+  price: string;
+  weight: string;
   status: 'tersedia' | 'soldout';
-  weight: number;
   description: string;
-  images: string[];
+  images: string;
 }
 
 interface EditProductDialogProps {
-  productId: string;
-  isOpen: boolean;
-  onClose: () => void;
+  product: Product;
 }
 
-export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDialogProps) => {
-  const { getProductById, updateProduct } = useProducts();
+export const EditProductDialog = ({ product }: EditProductDialogProps) => {
+  const [open, setOpen] = useState(false);
+  const { updateProduct } = useProducts();
   const { toast } = useToast();
-  const product = getProductById(productId);
-  const [imageUrls, setImageUrls] = useState<string[]>(['']);
   
   const form = useForm<ProductFormData>({
     defaultValues: {
-      name: '',
-      type: 'kambing',
-      price: 0,
-      status: 'tersedia',
-      weight: 0,
-      description: '',
-      images: ['']
-    }
+      name: product.name,
+      type: product.type,
+      price: product.price.toString(),
+      weight: product.weight.toString(),
+      status: product.status,
+      description: product.description,
+      images: product.images.join(', '),
+    },
   });
 
-  useEffect(() => {
-    if (product) {
-      // Safely handle images array
-      const productImages = product.images || [];
-      const urls = productImages.length > 0 ? productImages : [''];
-      setImageUrls(urls);
-      form.reset({
-        name: product.name,
-        type: product.type,
-        price: product.price,
-        status: product.status,
-        weight: product.weight,
-        description: product.description,
-        images: urls
-      });
-    }
-  }, [product, form]);
-
-  const addImageField = () => {
-    if (imageUrls.length < 3) {
-      const newUrls = [...imageUrls, ''];
-      setImageUrls(newUrls);
-      form.setValue('images', newUrls);
-    }
-  };
-
-  const removeImageField = (index: number) => {
-    const newUrls = imageUrls.filter((_, i) => i !== index);
-    setImageUrls(newUrls);
-    form.setValue('images', newUrls);
-  };
-
-  const updateImageUrl = (index: number, value: string) => {
-    const newUrls = [...imageUrls];
-    newUrls[index] = value;
-    setImageUrls(newUrls);
-    form.setValue('images', newUrls);
-  };
-
   const onSubmit = (data: ProductFormData) => {
-    if (!product) return;
-
-    const validImages = imageUrls.filter(url => url.trim() !== '');
-
     const updatedProduct: Product = {
       ...product,
       name: data.name,
       type: data.type,
-      price: data.price,
+      price: parseInt(data.price),
+      weight: parseInt(data.weight),
       status: data.status,
-      weight: data.weight,
       description: data.description,
-      images: validImages.length > 0 ? validImages : (product.images || [])
+      images: data.images.split(',').map(url => url.trim()).filter(url => url),
     };
 
-    updateProduct(productId, updatedProduct);
-    onClose();
+    updateProduct(product.id, updatedProduct);
     
     toast({
       title: "Produk berhasil diupdate",
-      description: `${data.name} telah diperbarui.`,
+      description: `${updatedProduct.name} telah diperbarui.`,
     });
+    
+    setOpen(false);
   };
 
-  if (!product) return null;
-
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Edit className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>Edit Produk</DialogTitle>
+          <DialogDescription>
+            Perbarui informasi hewan qurban.
+          </DialogDescription>
         </DialogHeader>
+        
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
@@ -126,13 +108,13 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
                 <FormItem>
                   <FormLabel>Nama Produk</FormLabel>
                   <FormControl>
-                    <Input placeholder="Contoh: Kambing Etawa Super" {...field} />
+                    <Input placeholder="Nama hewan qurban" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
+            
             <FormField
               control={form.control}
               name="type"
@@ -155,50 +137,21 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
                 </FormItem>
               )}
             />
-
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="price"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Harga (IDR)</FormLabel>
-                    <FormControl>
-                      <Input 
-                        type="number" 
-                        placeholder="3500000" 
-                        {...field}
-                        onChange={(e) => field.onChange(Number(e.target.value))}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="status"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Status</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Pilih status" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="tersedia">Tersedia</SelectItem>
-                        <SelectItem value="soldout">Sold Out</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-
+            
+            <FormField
+              control={form.control}
+              name="price"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Harga (Rp)</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="3500000" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="weight"
@@ -206,56 +159,49 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
                 <FormItem>
                   <FormLabel>Berat (kg)</FormLabel>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      placeholder="45" 
-                      {...field}
-                      onChange={(e) => field.onChange(Number(e.target.value))}
-                    />
+                    <Input type="number" placeholder="45" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <div>
-              <FormLabel>Foto Produk (Maksimal 3)</FormLabel>
-              <div className="space-y-2 mt-2">
-                {imageUrls.map((url, index) => (
-                  <div key={index} className="flex gap-2">
-                    <Input
-                      placeholder={`URL Foto ${index + 1}`}
-                      value={url}
-                      onChange={(e) => updateImageUrl(index, e.target.value)}
-                      className="flex-1"
-                    />
-                    {imageUrls.length > 1 && (
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => removeImageField(index)}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    )}
-                  </div>
-                ))}
-                {imageUrls.length < 3 && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={addImageField}
-                    className="w-full"
-                  >
-                    <Plus className="h-4 w-4 mr-2" />
-                    Tambah Foto
-                  </Button>
-                )}
-              </div>
-            </div>
-
+            
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Pilih status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="tersedia">Tersedia</SelectItem>
+                      <SelectItem value="soldout">Sold Out</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
+            <FormField
+              control={form.control}
+              name="images"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>URL Gambar</FormLabel>
+                  <FormControl>
+                    <Input placeholder="https://example.com/image.jpg" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            
             <FormField
               control={form.control}
               name="description"
@@ -263,28 +209,26 @@ export const EditProductDialog = ({ productId, isOpen, onClose }: EditProductDia
                 <FormItem>
                   <FormLabel>Deskripsi</FormLabel>
                   <FormControl>
-                    <Textarea 
-                      placeholder="Deskripsi lengkap produk..."
-                      className="min-h-[100px]"
-                      {...field} 
+                    <Textarea
+                      placeholder="Deskripsi hewan qurban..."
+                      className="resize-none"
+                      {...field}
                     />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
               )}
             />
-
-            <div className="flex justify-end gap-2 pt-4">
+            
+            <div className="flex justify-end space-x-2">
               <Button
                 type="button"
                 variant="outline"
-                onClick={onClose}
+                onClick={() => setOpen(false)}
               >
                 Batal
               </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                Update Produk
-              </Button>
+              <Button type="submit">Update Produk</Button>
             </div>
           </form>
         </Form>
