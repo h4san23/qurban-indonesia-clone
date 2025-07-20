@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Clock, Shield } from 'lucide-react';
+import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Clock, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const PublicLayout = ({ children }: { children: React.ReactNode }) => {
@@ -52,6 +52,14 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => {
                 )}
               >
                 Tentang Kami
+              </Link>
+              
+              <Link
+                to="/login"
+                className="text-gray-500 hover:text-emerald-600 transition-colors p-2 rounded-lg hover:bg-emerald-50"
+                title="Panel Admin"
+              >
+                <Settings className="h-5 w-5" />
               </Link>
             </div>
           </nav>
@@ -148,16 +156,6 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => {
                 <li><span className="hover:text-white">Garansi Kesehatan Hewan</span></li>
                 <li><span className="hover:text-white">Pembayaran Fleksibel</span></li>
               </ul>
-              
-              <div className="mt-6 pt-4 border-t border-emerald-700">
-                <Link
-                  to="/login"
-                  className="text-emerald-200 hover:text-white text-sm flex items-center space-x-2 transition-colors"
-                >
-                  <Shield className="h-4 w-4" />
-                  <span>Panel Admin</span>
-                </Link>
-              </div>
             </div>
           </div>
           
