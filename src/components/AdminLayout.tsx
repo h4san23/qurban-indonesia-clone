@@ -31,50 +31,13 @@ const AdminLayout = ({ children }: { children: React.ReactNode }) => {
               </div>
             </Link>
 
-            <div className="flex items-center space-x-6">
-              <Link
-                to="/admin"
-                className={cn(
-                  "text-emerald-100 hover:text-white font-medium transition-colors",
-                  isActive('/admin') && "text-white border-b-2 border-emerald-300"
-                )}
-              >
-                Dashboard
-              </Link>
-              
-              <div className="border-l border-emerald-600 pl-6 flex items-center space-x-4">
-                <span className="text-emerald-100 text-sm">Lihat Website:</span>
-                <Link
-                  to="/"
-                  className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
-                >
-                  <Home className="h-4 w-4" />
-                  <span>Beranda</span>
-                </Link>
-                <Link
-                  to="/products"
-                  className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
-                >
-                  <Package className="h-4 w-4" />
-                  <span>Produk</span>
-                </Link>
-                <Link
-                  to="/about"
-                  className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
-                >
-                  <Info className="h-4 w-4" />
-                  <span>Tentang</span>
-                </Link>
-              </div>
-              
-              <button
-                onClick={handleLogout}
-                className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
-              >
-                <LogOut className="h-4 w-4" />
-                <span>Keluar</span>
-              </button>
-            </div>
+            <button
+              onClick={handleLogout}
+              className="text-emerald-100 hover:text-white font-medium transition-colors flex items-center space-x-1"
+            >
+              <LogOut className="h-4 w-4" />
+              <span>Keluar</span>
+            </button>
           </nav>
         </div>
       </header>

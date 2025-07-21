@@ -21,7 +21,7 @@ const Login = () => {
     // Simulasi login sederhana
     setTimeout(() => {
       if (username === 'admin' && password === 'admin123') {
-        navigate('/admin');
+        window.open('/admin', '_blank');
       } else {
         alert('Username atau password salah!');
       }
